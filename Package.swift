@@ -17,7 +17,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "Collections",
-            path: "./xcframework/swift-collections.xcframework"
+            path: "./xcframework/swift-collections.xcframework.zip"
         )
     ]
 )
