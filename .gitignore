@@ -13,5 +13,6 @@ __pycache__
 # Do not commit the Swift Collections repo directory
 # That's only necessary to build the XCFramework
 swift-collections
+*.xcframework
 
 build
