@@ -18,11 +18,20 @@ printConfirmation() {
   echo -e "\033[32m↪ $1\033[0m"
 }
 
-# Start of the script
+# Configuration
 
 TARGET_FOLDER="swift-collections"
 REPO="https://github.com/apple/swift-collections.git"
 TAG="1.1.1"
+CODESIGN_IDENTITY=""
+BUILD_FOLDER="../build"
+MAC_BUILD_FOLDER="$BUILD_FOLDER/macos"
+IOS_BUILD_FOLDER="$BUILD_FOLDER/ios"
+IOS_SIM_BUILD_FOLDER="$BUILD_FOLDER/ios-simulator"
+XCF_BUILD_FOLDER="../xcframework"
+XCODE_PROJS_DIR="./Xcode"
+
+# Start of the script
 
 if [ ! -d "$TARGET_FOLDER" ]; then
   echo "> Cloning $REPO"
@@ -34,13 +43,6 @@ fi
 cd "$TARGET_FOLDER"
 
 swift package update
-
-BUILD_FOLDER="../build"
-MAC_BUILD_FOLDER="$BUILD_FOLDER/macos"
-IOS_BUILD_FOLDER="$BUILD_FOLDER/ios"
-IOS_SIM_BUILD_FOLDER="$BUILD_FOLDER/ios-simulator"
-XCF_BUILD_FOLDER="../xcframework"
-XCODE_PROJS_DIR="./Xcode"
 
 rm -rf "$BUILD_FOLDER"
 rm -rf "$XCF_BUILD_FOLDER"
@@ -87,6 +89,12 @@ xcodebuild archive \
   BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
   CODE_SIGNING_ALLOWED=NO
 
+printTitle "Code signing built Frameworks"
+
+codesign --force --sign "$CODESIGN_IDENTITY" --preserve-metadata=identifier,entitlements "$IOS_BUILD_FOLDER/Collections.xcarchive/Products/Library/Frameworks/Collections.framework"
+codesign --force --sign "$CODESIGN_IDENTITY" --preserve-metadata=identifier,entitlements "$IOS_SIM_BUILD_FOLDER/Collections.xcarchive/Products/Library/Frameworks/Collections.framework"
+codesign --force --sign "$CODESIGN_IDENTITY" --preserve-metadata=identifier,entitlements "$MAC_BUILD_FOLDER/Collections.xcarchive/Products/Library/Frameworks/Collections.framework"
+
 printTitle "Creating XCFramework"
 
 xcodebuild -create-xcframework \
@@ -102,7 +110,5 @@ cd "$XCF_BUILD_FOLDER"
 zip -r \
   "swift-collections.xcframework.zip" \
   "swift-collections.xcframework"
-
-rm -rf "swift-collections.xcframework"
 
 printConfirmation "Done"
